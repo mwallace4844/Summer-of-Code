@@ -1,0 +1,146 @@
+import arcade
+import random
+
+
+SCREEN_WIDTH = 1200
+SCREEN_HEIGHT = 700
+PACE = 15
+
+#The indexes of which way Alex is facing in the texture list
+#TEX_LEFT = 0
+#TEX_RIGHT = 1
+
+#list of the names of ice cream images
+ICEPICS = ["images/cherry.png", "images/chocolate.png", "images/cherry2.png", "images/smores.png"]
+
+class Game(arcade.View):
+
+
+    def __init__(self):
+        super().__init__()
+        arcade.set_background_color(arcade.color.APRICOT)
+        #self.window.set_mouse_visible(False)
+
+        self.alex = None
+
+        self.icecream_list = None
+        self.bowl_list = []
+
+        self.scoop = None #record a scooping sound
+        self.move_sound = None
+
+        #self.cream_carrying = None
+
+        self.remaining = len(ICEPICS)
+
+
+    def setup(self):
+        self.alex = arcade.Sprite("images/alex.png", scale = .25, center_x = SCREEN_WIDTH / 2, center_y = SCREEN_HEIGHT / 2)
+        # #CITE:https://arcade.academy/examples/sprite_face_left_or_right.html?highlight=face
+        # self.textures = []
+        # texture = arcade.load_texture("images/alex.png")
+        # self.textures.append(texture)
+        # texture = arcade.load_texture("images/alex.png", flipped_horizontally = True)
+        # self.set_texture(TEX_LEFT)
+
+
+        self.icecream_list = arcade.SpriteList()
+        for cone_name in ICEPICS:
+            x, y = self.return_random_center()
+
+            while (x <= SCREEN_WIDTH//2 - 100 and x >=SCREEN_WIDTH//2 + 100) and (y<= SCREEN_HEIGHT//2 + 200 and y>=SCREEN_HEIGHT//2 - 200):
+                x, y = self.return_random_center()
+
+            if cone_name == "images/cherry.png" or cone_name == "images/smores.png":
+                s = .25
+            else:
+                s = .1
+
+            ice_cream = arcade.Sprite(cone_name, scale = s, center_x = x, center_y = y)
+            self.icecream_list.append(ice_cream)
+            self.bowl_list.append((x,y))
+        self.move_sound = arcade.load_sound("audio/swallow.mp3")
+
+
+    def return_random_center(self):
+
+        x = random.randint(100, SCREEN_WIDTH - 100)
+        y = random.randint(100, SCREEN_HEIGHT - 100)
+        return (x,y)
+
+    def on_draw(self):
+        arcade.start_render()
+
+        for x,y in self.bowl_list:
+            arcade.draw_circle_filled(x, y, 50, arcade.color.ALICE_BLUE)
+            arcade.draw_circle_filled(x, y, 40, arcade.color.LIGHT_GRAY)
+
+        self.icecream_list.draw()
+
+        self.alex.draw()
+
+
+
+        self.pick_up = arcade.check_for_collision_with_list(self.alex, self.icecream_list)
+        for cone in self.pick_up:
+            self.icecream_list.remove(cone)
+            arcade.play_sound(self.move_sound)
+            #self.cream_carrying = cone
+            self.remaining -= 1
+
+        message = "The number of scoops remaining is: {}".format(self.remaining)
+        arcade.draw_text(message, 50, 50, arcade.color.BLACK, 20)
+
+    def on_update(self, time):
+        self.alex.update()
+
+    def on_key_press(self, key, mod):
+        #moving_sprites = [self.alex, self.cream_carrying]
+        if key == arcade.key.LEFT:
+            self.alex.change_x = -PACE
+        elif key == arcade.key.RIGHT:
+            self.alex.change_x = +PACE
+        elif key == arcade.key.DOWN:
+            self.alex.change_y = -PACE
+        elif key ==arcade.key.UP:
+            self.alex.change_y =+PACE
+
+    def on_key_release(self, key, mod):
+        if key == arcade.key.LEFT:
+            self.alex.change_x = 0
+        elif key == arcade.key.RIGHT:
+            self.alex.change_x = 0
+        elif key == arcade.key.DOWN:
+            self.alex.change_y = 0
+        elif key ==arcade.key.UP:
+            self.alex.change_y = 0
+
+
+class Instructions(arcade.View):
+
+    def on_show(self):
+        arcade.set_background_color(arcade.color.LAVENDER)
+
+
+    def on_draw(self):
+        arcade.start_render()
+        arcade.draw_text("Try to collect the ice cream as fast as possible!", SCREEN_WIDTH // 16, SCREEN_HEIGHT // 2, arcade.color.BLACK, 40)
+        arcade.draw_text("Welcome", SCREEN_WIDTH // 3, SCREEN_HEIGHT // 1.5, arcade.color.BLACK, 80)
+        arcade.draw_text("Press SPACE to start", SCREEN_WIDTH // 2.4, SCREEN_HEIGHT // 4, arcade.color.BLACK, 20)
+        # button = TextButton("Let's play!", SCREEN_WIDTH // 2, 200, 40, 120, arcade.color.GRAY_BLUE, arcade.color.BLACK, 20)
+        # button.draw()
+
+
+    def on_key_press(self, key, mod):
+        #HELP trying to get space to start the game
+        if key == arcade.key.SPACE:
+            game_view = Game()
+            game_view.setup()
+            self.window.show_view(game_view)  # where does self.window come from?
+
+
+def main():
+    win = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, "main game")
+    beg_view = Instructions()
+    win.show_view(beg_view)
+    arcade.run()
