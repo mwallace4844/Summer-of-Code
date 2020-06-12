@@ -1,14 +1,13 @@
 # Summer-of-Code
  ## Questions
- 1. I'd like to have the player only be able to pick up one bowl at a time. Right now, all the bowls that Alex is in contact with at once are picked up. But only one is dropped at a time.
  2. The bowls don't actually have to be on the conveyor belt to trigger the end page, just very close to it. Maybe because the sprite is larger than it looks? 
- 3. Would adding obstacles be extremely difficult? I was thinking about placing them after the bowls so that they don't overlap. And if the Alex sprite is in contact with the obstacle to have the arrow keys no longer do anything. 
+ 3. Same issue with the tables. It's triggering the lose page before the sprites appear to touch.
 ## How to run my code
  Run main.py. Arcade must be installed. The most up-tp-date version is in the "06.11.20" folder. 
 ## Motivation
  At Hamilton, the ice cream machine is Commons is very adored. I wanted to create a game that involved a little bit of strategy (what order to eat the ice cream and pick up the bowls in). 
  ## Description
- In this game you are Alexander Hamilton! Use the arrow keys to move around. When touching an ice cream, you can press "E" to eat it. You can press "P" to pick up a bowl. You must eat the ice cream before picking up a bowl. You cannot eat ice cream if you are carrying a bowl. If so, you lose. You can pick up as many bowls as you want. You can press "D" to drop a bowl. The goal of the game is to eat all the ice cream and to place all the bowls on the conveyor belt as quickly as possible.
+ In this game you are Alexander Hamilton! Use the arrow keys to move around. When touching an ice cream, you can press "E" to eat it. You can press "P" to pick up a bowl. You must eat the ice cream before picking up a bowl. You cannot eat ice cream if you are carrying a bowl. You cannot touch the tables. If so, you lose. You can pick up as many bowls as you want. You can press "D" to drop a bowl. The goal of the game is to eat all the ice cream and to place all the bowls on the conveyor belt as quickly as possible.
  ## Keys
  **Arrows** - moves Alex
  **E** - Alex eats the ice cream
