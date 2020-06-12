@@ -1,3 +1,6 @@
+
+
+
 import arcade
 import random
 
@@ -24,6 +27,8 @@ class Game(arcade.View):
         self.bowl_sprites = None
         self.carrying = None
 
+        self.table_list = None
+
         self.move_sound = None
 
         self.remaining = len(ICEPICS)
@@ -34,34 +39,39 @@ class Game(arcade.View):
 
     def setup(self):
         #Create sprites
-        self.alex = arcade.Sprite("images/alex.png", scale = .18, center_x = SCREEN_WIDTH / 2, center_y = SCREEN_HEIGHT / 2)
+        self.alex = arcade.Sprite("images/alex.png", scale = .15, center_x = SCREEN_WIDTH / 2, center_y = SCREEN_HEIGHT / 2)
         self.conveyor = arcade.Sprite("images/conveyor.png", scale = .7, center_x=200, center_y=28)
 
         #Create lists
         self.bowl_sprites = arcade.SpriteList()
         self.carrying = []
         self.icecream_list = arcade.SpriteList()
+        self.table_list = arcade.SpriteList()
 
         #Create dictionaries to keep track of which ice creams have been eaten.
         self.icecream_dict = {}
         self.bowl_dict = {}
 
+        # Create the table sprites as obstacles.
+        for center in [(125, 350,), (800, 575), (1000, 200)]:
+            x, y = center
+            table = arcade.Sprite("images/table.png", .13 ,center_x=x, center_y=y)
+            self.table_list.append(table)
+        self.table_list.append(arcade.Sprite("images/table.png", .18 ,center_x=500, center_y=150))
+
         #Create the ice cream and bowl sprites.
         for cone_name in ICEPICS:
             x, y = self.return_random_center()
 
-            while (x <= SCREEN_WIDTH//2 - 100 and x >=SCREEN_WIDTH//2 + 100) and (y<= SCREEN_HEIGHT//2 + 200 and y>=SCREEN_HEIGHT//2 - 200):
-                x, y = self.return_random_center()
-
             #Since the ice cream images are not all the same size, they have to be scaled differently.
             if cone_name == "images/cherry.png" or cone_name == "images/smores.png":
-                s = .18
+                s = .16
             else:
-                s = .08
+                s = .072
 
             ice_cream = arcade.Sprite(cone_name, scale = s, center_x = x, center_y = y)
             self.icecream_list.append(ice_cream)
-            new_bowl_sprite = arcade.Sprite("images/bestbowl.png", scale=.2, center_x=x, center_y=y)
+            new_bowl_sprite = arcade.Sprite("images/bestbowl.png", scale=.18, center_x=x, center_y=y)
             self.bowl_sprites.append(new_bowl_sprite)
             self.icecream_dict[ice_cream] = False
             self.bowl_dict[new_bowl_sprite] = ice_cream
@@ -82,6 +92,7 @@ class Game(arcade.View):
         self.conveyor.draw()
         self.bowl_sprites.draw()
         self.icecream_list.draw()
+        self.table_list.draw()
 
         self.alex.draw()
 
@@ -114,6 +125,12 @@ class Game(arcade.View):
             pass
             end_view = Win_Page(self.time_formatted)
             self.window.show_view(end_view)
+
+        #If you run into a table you lose
+        obstacle = arcade.check_for_collision_with_list(self.alex, self.table_list)
+        if len(obstacle) != 0:
+            new_view = Lose_Page("Watch out! You tripped over a table!")
+            self.window.show_view(new_view)
 
     def on_key_press(self, key, mod):
 
@@ -166,7 +183,7 @@ class Game(arcade.View):
                     self.window.show_view(new_view)
 
         if key == arcade.key.D and len(self.carrying) != 0:
-            self.carrying.pop()
+            self.carrying.clear()
 
 
     def on_key_release(self, key, mod):
@@ -231,7 +248,7 @@ class Lose_Page(arcade.View):
 
         if message == "You tried to clear a bowl before eating the ice cream!":
             self.x = SCREEN_WIDTH // 16
-        elif message == "Alex can't eat while carrying a bowl!":
+        elif message == "Alex can't eat while carrying a bowl!" or message == "Watch out! You tripped over a table!":
             self.x = SCREEN_WIDTH // 4.75
 
     def on_draw(self):
@@ -256,3 +273,193 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+
+
+
+
+
+
+
+
+
+
+# #In-class demo
+# import arcade
+#
+# SCREEN_WIDRH = 800
+# SCREEN_HEIGHT = 800
+# SCREEN_TITLE = "Example"
+# SPEED = 10
+#
+#
+# class Game(arcade.Window):
+#     def __init__(self):
+#         # inheritance from the window class
+#         super().__init__(SCREEN_WIDRH, SCREEN_HEIGHT, SCREEN_TITLE)
+#         arcade.set_background_color(arcade.color.AVOCADO)
+#
+#         self.monkey = None
+#         self.move_sound = None
+#
+#         self.fish_list = None
+#
+#         self.num_fish = 0
+#
+#     def setup(self):
+#         #set up players and such
+#         self.cat = arcade.Sprite("images/realcat.png", scale = 0.25, center_x=400, center_y=400)
+#
+#         self.move_sound = arcade.load_sound("audio/swallow.mp3")
+#
+#         self.fish_list = arcade.SpriteList()
+#         for x in range(100, 500, 100):
+#             fish = arcade.Sprite("images/realfish.png", scale=0.1, center_x=x, center_y=200)
+#             self.fish_list.append(fish)
+#
+#     def on_draw(self):
+#         arcade.start_render()
+#         self.cat.draw()
+#         self.fish_list.draw()
+#
+#         self.eat = arcade.check_for_collision_with_list(self.cat, self.fish_list)
+#         for fish in self.eat:
+#             self.fish_list.remove(fish)
+#             self.num_fish += 1
+#             arcade.play_sound(self.move_sound)
+#
+#         msg = f"# of fishes eaten: {self.num_fish}"
+#         arcade.draw_text(msg, 600, 50, arcade.color.WHITE, 17)
+#
+#     def on_update(self, time):
+#         self.cat.update()
+#
+#     def on_key_press(self, key, mod):
+#         if key == arcade.key.LEFT:
+#             self.cat.change_x = -SPEED
+#         elif key == arcade.key.RIGHT:
+#             self.cat.change_x = +SPEED
+#         elif key == arcade.key.UP:
+#             self.cat.change_y = +SPEED
+#         elif key == arcade.key.DOWN:
+#             self.cat.change_y = -SPEED
+#
+#     def on_key_release(self, key, mod):
+#         if key == arcade.key.LEFT:
+#             self.cat.change_x = 0
+#         elif key == arcade.key.RIGHT:
+#             self.cat.change_x = 0
+#         elif key == arcade.key.UP:
+#             self.cat.change_y = 0
+#         elif key == arcade.key.DOWN:
+#             self.cat.change_y = 0
+#
+# def main():
+#     window = Game()
+#     window.setup()
+#     arcade.run()
+#
+#
+# if __name__ == '__main__':
+#     main()
+
+
+
+
+
+
+# """
+# Starting Template
+#
+# """
+# import arcade
+#
+# SCREEN_WIDTH = 800
+# SCREEN_HEIGHT = 600
+# SCREEN_TITLE = "Starting Template"
+#
+#
+# class MyGame(arcade.Window):
+#     """
+#     Main application class.
+#
+#     NOTE: Go ahead and delete the methods you don't need.
+#     If you do need a method, delete the 'pass' and replace it
+#     with your own code. Don't leave 'pass' in this program.
+#     """
+#
+#     def __init__(self, width, height, title):
+#         super().__init__(width, height, title)
+#
+#         arcade.set_background_color(arcade.color.AMAZON)
+#
+#         # If you have sprite lists, you should create them here,
+#         # and set them to None
+#
+#     def setup(self):
+#         # Create your sprites and sprite lists here
+#         pass
+#
+#     def on_draw(self):
+#         """
+#         Render the screen.
+#         """
+#
+#         # This command should happen before we start drawing. It will clear
+#         # the screen to the background color, and erase what we drew last frame.
+#         arcade.start_render()
+#
+#         # Call draw() on all your sprite lists below
+#
+#     def on_update(self, delta_time):
+#         """
+#         All the logic to move, and the game logic goes here.
+#         Normally, you'll call update() on the sprite lists that
+#         need it.
+#         """
+#         pass
+#
+#     def on_key_press(self, key, key_modifiers):
+#         """
+#         Called whenever a key on the keyboard is pressed.
+#
+#         For a full list of keys, see:
+#         http://arcade.academy/arcade.key.html
+#         """
+#         pass
+#
+#     def on_key_release(self, key, key_modifiers):
+#         """
+#         Called whenever the user lets off a previously pressed key.
+#         """
+#         pass
+#
+#     def on_mouse_motion(self, x, y, delta_x, delta_y):
+#         """
+#         Called whenever the mouse moves.
+#         """
+#         pass
+#
+#     def on_mouse_press(self, x, y, button, key_modifiers):
+#         """
+#         Called when the user presses a mouse button.
+#         """
+#         pass
+#
+#     def on_mouse_release(self, x, y, button, key_modifiers):
+#         """
+#         Called when a user releases a mouse button.
+#         """
+#         pass
+#
+#
+# def main():
+#     """ Main method """
+#     game = MyGame(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+#     game.setup()
+#     arcade.run()
+#
+#
+# if __name__ == "__main__":
+#     main()
