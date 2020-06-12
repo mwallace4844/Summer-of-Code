@@ -1,7 +1,7 @@
 # Summer-of-Code
  ## Questions
- 2. The bowls don't actually have to be on the conveyor belt to trigger the end page, just very close to it. Maybe because the sprite is larger than it looks? 
- 3. Same issue with the tables. It's triggering the lose page before the sprites appear to touch.
+ 1. The bowls don't actually have to be on the conveyor belt to trigger the end page, just very close to it. Maybe because the sprite is larger than it looks? 
+ 2. Same issue with the tables. It's triggering the lose page before the sprites appear to touch.
 ## How to run my code
  Run main.py. Arcade must be installed. The most up-tp-date version is in the "06.11.20" folder. 
 ## Motivation
