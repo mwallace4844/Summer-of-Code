@@ -1,4 +1,8 @@
 # Summer-of-Code
+ ## Questions
+ 1. I'd like to have the player only be able to pick up one bowl at a time. Right now, all the bowls that Alex is in contact with at once are picked up. But only one is dropped at a time.
+ 2. The bowls don't actually have to be on the conveyor belt to trigger the end page, just very close to it. Maybe because the sprite is larger than it looks? 
+ 3. Would adding obstacles be extremely difficult? I was thinking about placing them after the bowls so that they don't overlap. And if the Alex sprite is in contact with the obstacle to have the arrow keys no longer do anything. 
 ## How to run my code
  Run main.py. Arcade must be installed. The most up-tp-date version is in the "06.11.20" folder. 
 ## Motivation
