@@ -5,7 +5,7 @@
  At Hamilton, the ice cream machine is Commons is very adored. I wanted to create a game that involved a little bit of strategy (what order to eat the ice cream and pick up the bowls in). 
  ## Description
  In this game you are Alexander Hamilton! Use the arrow keys to move around. When touching an ice cream, you can press "E" to eat it. You can press "P" to pick up a bowl. You must eat the ice cream before picking up a bowl. You cannot eat ice cream if you are carrying a bowl. If so, you lose. You can pick up as many bowls as you want. You can press "D" to drop a bowl. The goal of the game is to eat all the ice cream and to place all the bowls on the conveyor belt as quickly as possible.
- ##Keys
+ ## Keys
  **Arrows** - moves Alex
  **E** - Alex eats the ice cream
  **P** - ALex picks up a bowl
