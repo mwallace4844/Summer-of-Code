@@ -1,4 +1,3 @@
-
 import arcade
 import random
 
@@ -26,6 +25,8 @@ class Game(arcade.View):
         self.table_list = None
 
         self.move_sound = None
+        self.clink = None
+        self.hit = None
         self.time_formatted = ""
 
         self.time = 0
@@ -38,7 +39,7 @@ class Game(arcade.View):
 
         #Create lists
         self.bowl_sprites = arcade.SpriteList()
-        self.carrying = []
+        self.carrying = arcade.SpriteList()
         self.icecream_list = arcade.SpriteList()
         self.table_list = arcade.SpriteList()
 
@@ -83,7 +84,10 @@ class Game(arcade.View):
 
                 self.ICEPICS.remove(cone_name)
 
+        #Load the sounds
         self.move_sound = arcade.load_sound("audio/swallow.mp3")
+        self.clink = arcade.load_sound("audio/clink_cut.mp3")
+        self.hit = arcade.load_sound("audio/Table.mp3")
 
 
     def return_random_center(self):
@@ -140,6 +144,7 @@ class Game(arcade.View):
         #If you run into a table, you lose
         obstacle = arcade.check_for_collision_with_list(self.alex, self.table_list)
         if len(obstacle) != 0:
+            arcade.play_sound(self.hit)
             new_view = Lose_Page("Watch out! You tripped over a table!")
             self.window.show_view(new_view)
 
@@ -193,7 +198,12 @@ class Game(arcade.View):
                     self.window.show_view(new_view)
 
         if key == arcade.key.D and len(self.carrying) != 0:
-            self.carrying.clear()
+            cleared = arcade.check_for_collision_with_list(self.conveyor, self.carrying)
+            if len(cleared) != 0:
+                arcade.play_sound(self.clink)
+            while len(self.carrying) != 0:
+                for sprite in self.carrying:
+                    self.carrying.remove(sprite)
 
 
     def on_key_release(self, key, mod):
