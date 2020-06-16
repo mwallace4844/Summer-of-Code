@@ -1,17 +1,17 @@
+
 import arcade
 import random
 
 
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 700
-PACE = 10
-
-#list of the names of ice cream images
-ICEPICS = ["images/cherry.png", "images/chocolate.png", "images/cherry2.png", "images/smores.png"]
+PACE = 8
 
 class Game(arcade.View):
 
     def __init__(self):
+        #List of the names of ice cream images
+        self.ICEPICS = ["images/cherry.png", "images/chocolate.png", "images/cherry2.png", "images/smores.png", "images/cherry.png", "images/chocolate.png", "images/cherry2.png", "images/smores.png"]
         super().__init__()
         arcade.set_background_color(arcade.color.APRICOT)
         #self.window.set_mouse_visible(False)
@@ -26,6 +26,7 @@ class Game(arcade.View):
         self.table_list = None
 
         self.move_sound = None
+        self.time_formatted = ""
 
         self.time = 0
 
@@ -35,42 +36,43 @@ class Game(arcade.View):
         self.alex = arcade.Sprite("images/alex.png", scale = .15, center_x = SCREEN_WIDTH / 2, center_y = SCREEN_HEIGHT / 2)
         self.conveyor = arcade.Sprite("images/conveyor.png", scale = .7, center_x=200, center_y=28)
 
-
         #Create lists
         self.bowl_sprites = arcade.SpriteList()
         self.carrying = []
         self.icecream_list = arcade.SpriteList()
         self.table_list = arcade.SpriteList()
 
-        self.remaining = len(self.icecream_list)
+        self.remaining = len(self.ICEPICS)
 
         #Create dictionaries to keep track of which ice creams have been eaten.
         self.icecream_dict = {}
         self.bowl_dict = {}
 
         # Create the table sprites as obstacles.
-        for center in [(100, 400,), (800, 575), (1000, 200)]:
+        # EDIT: change to a square table
+        for center in [(120, 400,), (800, 575), (1000, 100)]:
             x, y = center
-            table = arcade.Sprite("images/table.png", .13 ,center_x=x, center_y=y)
+            table = arcade.Sprite("images/rect_2_table_flipped.PNG", .11 ,center_x=x, center_y=y)
             self.table_list.append(table)
-        self.table_list.append(arcade.Sprite("images/table.png", .18 ,center_x=500, center_y=150))
+        self.table_list.append(arcade.Sprite("images/rect_2_table.PNG", .15 ,center_x=500, center_y=150))
 
         #Create the ice cream and bowl sprites.
-        while len(ICEPICS) != 0:
+        while len(self.ICEPICS) != 0:
             x, y = self.return_random_center()
 
-            cone_name = ICEPICS[0]
+            cone_name = self.ICEPICS[0]
             #Since the ice cream images are not all the same size, they have to be scaled differently.
             if cone_name == "images/cherry.png" or cone_name == "images/smores.png":
                 s = .16
             else:
                 s = .072
 
-            #If the sprite collides with a table, do not add it.
+            #If the sprite collides with a table or another ice cream, do not add it.
             ice_cream = arcade.Sprite(cone_name, scale = s, center_x = x, center_y = y)
             on_table = arcade.check_for_collision_with_list(ice_cream, self.table_list)
+            on_ice_cream = arcade.check_for_collision_with_list(ice_cream, self.icecream_list)
 
-            if len(on_table) == 0:
+            if len(on_table) == 0 and len(on_ice_cream) == 0:
                 self.icecream_list.append(ice_cream)
                 new_bowl_sprite = arcade.Sprite("images/bestbowl.png", scale=.18, center_x=x, center_y=y)
                 self.bowl_sprites.append(new_bowl_sprite)
@@ -79,7 +81,7 @@ class Game(arcade.View):
                 self.icecream_dict[ice_cream] = False
                 self.bowl_dict[new_bowl_sprite] = ice_cream
 
-                ICEPICS.remove(cone_name)
+                self.ICEPICS.remove(cone_name)
 
         self.move_sound = arcade.load_sound("audio/swallow.mp3")
 
@@ -101,15 +103,21 @@ class Game(arcade.View):
 
         self.alex.draw()
 
-        message = "Scoops remaining: {}".format(self.remaining)
-        arcade.draw_text(message, 900, 50, arcade.color.BLACK, 20)
+        arcade.draw_text("Scoops remaining: {}".format(self.remaining), 40, 610, arcade.color.BLACK, 20)
+        #Display the number of bowls remaining. Not being carried by Alex.
+        bowls_touching = arcade.check_for_collision_with_list(self.conveyor, self.bowl_sprites)
+        bowls_on_conveyor = 0
+        for _bowl in bowls_touching:
+            if _bowl not in self.carrying:
+                bowls_on_conveyor += 1
+        arcade.draw_text("Bowls remaining: {}".format(8 - bowls_on_conveyor), 40, 570, arcade.color.BLACK, 20)
 
         #Display the time elapsed nicely
         minutes = int(self.time) // 60
         seconds = int(self.time) % 60
         self.time_formatted = "{:02d}:{:02d}".format(minutes, seconds)
 
-        arcade.draw_text("Time elaspsed: {}".format(self.time_formatted), 900, 100, arcade.color.BLACK, 20)
+        arcade.draw_text("Time elaspsed: {}".format(self.time_formatted), 40, 650, arcade.color.BLACK, 20)
 
 
 
@@ -122,7 +130,6 @@ class Game(arcade.View):
         self.time += time
 
         # Check if the bowls are on the conveyor belt or not
-        #HELP doesn't have to actually be on the conveyor, just close to it
         self.on_conveyor = arcade.check_for_collision_with_list(self.conveyor, self.bowl_sprites)
 
         # If all ice cream is eaten and the bowls are on the conveyor belt, display the end page.
@@ -171,7 +178,6 @@ class Game(arcade.View):
                     self.remaining -= 1
 
         if key == arcade.key.P:
-            #HELP only pick up one at a time
             self.pick_up = arcade.check_for_collision_with_list(self.alex, self.bowl_sprites)
 
             #The ice cream must be eaten before picking up the bowl
@@ -183,7 +189,7 @@ class Game(arcade.View):
                         self.carrying.append(bowl)
                 else:
                     pass
-                    new_view = Lose_Page("You tried to clear a bowl before eating the ice cream!")
+                    new_view = Lose_Page("You can't clear the bowl without eating the ice cream!")
                     self.window.show_view(new_view)
 
         if key == arcade.key.D and len(self.carrying) != 0:
@@ -232,16 +238,16 @@ class Win_Page(arcade.View):
 
     def on_draw(self):
         arcade.start_render()
-        arcade.draw_text("You collected all the ice cream in {}".format(self.time), SCREEN_WIDTH // 7.5, SCREEN_HEIGHT // 2,
+        arcade.draw_text("You fed Alex a healthy diet in {}!".format(self.time), SCREEN_WIDTH // 6, SCREEN_HEIGHT // 2,
                          arcade.color.BLACK, 40)
         arcade.draw_text("Congratulations!", SCREEN_WIDTH // 5, SCREEN_HEIGHT // 1.5, arcade.color.BLACK, 80)
-        arcade.draw_text("Press SPACE to play again", SCREEN_WIDTH // 2.4, SCREEN_HEIGHT // 4, arcade.color.BLACK, 20)
+        arcade.draw_text("Press SPACE to start", SCREEN_WIDTH // 2.4, SCREEN_HEIGHT // 6, arcade.color.BLACK, 20)
 
     def on_key_press(self, key, mod):
         if key == arcade.key.SPACE:
-            game_view = Game()
-            game_view.setup()
-            self.window.show_view(game_view)
+            new_view = Game()
+            new_view.setup()
+            self.window.show_view(new_view)
 
 class Lose_Page(arcade.View):
 
@@ -250,7 +256,7 @@ class Lose_Page(arcade.View):
         arcade.set_background_color(arcade.color.LAVENDER)
         self.message = message
 
-        if message == "You tried to clear a bowl before eating the ice cream!":
+        if message == "You can't clear the bowl without eating the ice cream!":
             self.x = SCREEN_WIDTH // 16
         elif message == "Alex can't eat while carrying a bowl!" or message == "Watch out! You tripped over a table!":
             self.x = SCREEN_WIDTH // 4.75
@@ -258,14 +264,15 @@ class Lose_Page(arcade.View):
     def on_draw(self):
         arcade.start_render()
         arcade.draw_text(self.message, self.x, SCREEN_HEIGHT // 2, arcade.color.BLACK, 36)
-        arcade.draw_text("Game over", SCREEN_WIDTH // 3.2, SCREEN_HEIGHT // 1.5, arcade.color.BLACK, 80)
+        arcade.draw_text("Game Over", SCREEN_WIDTH // 3.2, SCREEN_HEIGHT // 1.5, arcade.color.BLACK, 80)
         arcade.draw_text("Press SPACE to play again", SCREEN_WIDTH // 2.65, SCREEN_HEIGHT // 4, arcade.color.BLACK, 20)
 
-    def on_key_press(self, key, mod):
-        if key == arcade.key.SPACE:
+    def on_key_press(self, _key, _mod):
+        if _key == arcade.key.SPACE:
             game_view = Game()
             game_view.setup()
             self.window.show_view(game_view)
+            arcade.run()
 
 
 def main():
